@@ -132,8 +132,8 @@ fn move_point(map: &mut [[u8;64];64]) {
   map[y][x] = 3;
 }
 
-fn exit() {
-  println!("Game Over!");
+fn exit(score: i32) {
+  println!("Game Over! Final Tail Length: {}", score);
   process::exit(1);
 }
 
@@ -166,6 +166,7 @@ fn main() {
     let mut snake = List(Rect::new(128, 128, 16, 16));
     snake.insert(Rect::new(112,128,16,16));
     snake.insert(Rect::new(96,128,16,16));
+    let mut tail_length: i32 = 3;
     let mut dir = Dir::Right;
     let (mut rx, mut ry) = (8,8);
     map[ry][rx] = 1;
@@ -183,31 +184,34 @@ fn main() {
           match event {
             Event::Quit {..} | Event::KeyDown {keycode: Some(Keycode::Escape), ..} => {
                 //todo: implement pause and quit
-                exit();
+                exit(tail_length);
             },
             Event::KeyDown { keycode: Some(Keycode::Left), ..} => {
               if dir != Dir::Right && dir != Dir::Left {
                 dir = Dir::Left;
+                action_taken = true;
               }
             },
             Event::KeyDown { keycode: Some(Keycode::Right), ..} => {
               if dir != Dir::Left && dir != Dir::Right {
                 dir = Dir::Right;
+                action_taken = true;
               }
             },
             Event::KeyDown { keycode: Some(Keycode::Up), ..} => {
               if dir != Dir::Down && dir != Dir::Up {
                 dir = Dir::Up;
+                action_taken = true;
               }
             },
             Event::KeyDown { keycode: Some(Keycode::Down), ..} => {
               if dir != Dir::Up && dir != Dir::Down {
                 dir = Dir::Down;
+                action_taken = true;
               }
             },
             _ => {}
           }
-          action_taken = true;
         }
       }
       //update game
@@ -220,10 +224,11 @@ fn main() {
       };
       if map[ry][rx] == 2 {
         //todo: implement endgame and restart
-        exit();
+        exit(tail_length);
       } else if map[ry][rx] == 3 {
         move_point(&mut map);
         add_to_tail(&mut snake);
+        tail_length += 1;
       }
       map[ry][rx] = 1;
       update_snake(&mut snake, &mut map, &dir);
